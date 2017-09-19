@@ -1,0 +1,142 @@
+		<?php
+		$this->Widget->clear();
+		$this->Widget->setStyleSheet($this->view_dir . "css/styles.css");
+		$this->Widget->setStyleSheet(VENDORWEBDIR . "jqplot/jquery.jqplot.min.css");
+		$this->Widget->setWidgetButton("arrow");
+		$this->Widget->create($this->_("AdminMain.index.boxtitle_feed", true), array('id'=>"widget_uptime_robot_admin_main"), $this->Html->ifSet($render_section, null));
+		?>
+		
+		<style>
+			.shadow{display: none;}
+		</style>
+		
+		<div class="system_status" id="uptime_robot">
+			<div class="link_area">
+				<ul>
+					<li>
+						<div style="width: 100%;">
+							<?php 
+								$i = 1;
+								foreach($server_robot as $server){
+							?>
+								<div style="width: 40%; display: inline-block; padding: 5px;"><span class="icon <?php if(ping($server['ip'])){ echo'success'; } else { echo'error'; } ?>"></span><?= $server['hostname']; ?>
+									<?php $this->Form->create('', array('id' => 'delete_'.$i, 'style' => 'display: inline-block; width: auto; float: right;')); 
+										  $this->Form->fieldHidden('delete_server', $this->Html->ifSet($this->post['delete_server']), array('id' => 'delete_server', 'value' => $server['hostname']));
+									?>
+									<a href="#uptime_robot" onclick="$('#delete_<?= $i; ?>').submit();"><?= Language::_("AdminMain.index.delete", true); ?></a>
+									<?php $this->Form->end(); ?>
+								</div>
+							<?php 
+									$i++;
+								} 
+							?>
+						<div>
+					</li>
+				</ul>
+				<div class="button_row" style="padding-bottom: 5px;">
+					<a class="btn_right" href="#uptime_robot" onclick="$('#uptime_robot').toggle(); $('#add_server').toggle();"><?= Language::_("AdminMain.index.add_server", true); ?></a>
+					<a class="btn_right" href="#uptime_robot" onclick="$('#uptime_robot').toggle(); $('#config').toggle();"><?= Language::_("AdminMain.index.configure", true); ?></a>
+				</div>
+			</div>
+		</div>
+		
+		<div id="config" style="display: none;">
+		<?php $this->Form->create('', array('id' => 'general_settings')); ?>
+			<div class="inner">
+				<div class="title_row first"><h3><?= Language::_("AdminMain.index.general_settings", true); ?></h3></div>
+					<div class="pad">
+						<ul>
+							<li>
+								<?php
+									$this->Form->label($this->_('AdminMain.index.admin_email', true));
+									$this->Form->fieldText('admin_email', $this->Html->ifSet($this->post['admin_email']), array('id' => 'admin_email', 'value' => $config['admin_email'], 'class' => "form-control"));
+								?>
+							</li>
+							<li>
+								<?php
+									$this->Form->label($this->_('AdminMain.index.admin_phone', true));
+									$this->Form->fieldText('admin_phone', $this->Html->ifSet($this->post['admin_phone']), array('id' => 'admin_phone', 'value' => $config['admin_phone'], 'class' => "form-control"));
+								?>
+							</li>
+							<li>
+								<?php
+									$this->Form->label($this->_('AdminMain.index.deliver_method', true));
+									$this->Form->fieldSelect('deliver_method', array('email' => 'E-mail', 'twilio' => 'Twilio'), array('id' => 'deliver_method', 'class' => "form-control"));
+								?>
+							</li>
+							<li>
+								<?php
+									$this->Form->label($this->_('AdminMain.index.twilio_sid', true));
+									$this->Form->fieldText('twilio_sid', $this->Html->ifSet($this->post['twilio_sid']), array('id' => 'twilio_sid', 'value' => $config['twilio_sid'], 'class' => "form-control"));
+								?>
+							</li>
+							<li>
+								<?php
+									$this->Form->label($this->_('AdminMain.index.twilio_token', true));
+									$this->Form->fieldText('twilio_token', $this->Html->ifSet($this->post['twilio_token']), array('id' => 'twilio_token', 'value' => $config['twilio_token'], 'class' => "form-control"));
+								?>
+							</li>
+							<li>
+								<?php
+									$this->Form->label($this->_('AdminMain.index.twilio_number', true));
+									$this->Form->fieldText('twilio_number', $this->Html->ifSet($this->post['twilio_number']), array('id' => 'twilio_number', 'value' => $config['twilio_number'], 'class' => "form-control"));
+								?>
+							</li>
+					</div>
+			</div>
+			<div class="button_row">
+				<a class="btn_right" href="#uptime_robot" onclick="$('#uptime_robot').toggle(); $('#config').toggle();"><?= Language::_("AdminMain.index.cancel", true); ?></a>
+				<a class="btn_right submit" href="#" onclick="$('#general_settings').submit();"><?= Language::_("AdminMain.index.configure", true); ?></a>
+			</div>
+			<?php $this->Form->end(); ?>
+		</div>
+
+		
+		<div id="add_server" style="display: none;">
+			<?php $this->Form->create('', array('id' => 'add_server')); ?>
+			<div class="inner">
+				<div class="title_row first"><h3><?= Language::_("AdminMain.index.add_server", true); ?></h3></div>
+					<div class="pad">
+						<ul>
+							<li>
+								<?php
+									$this->Form->label($this->_('AdminMain.index.hostname', true));
+									$this->Form->fieldText('hostname', $this->Html->ifSet($this->post['hostname']), array('id' => 'hostname', 'class' => "form-control"));
+								?>
+							</li>
+							<li>
+								<?php
+									$this->Form->label($this->_('AdminMain.index.ip_address', true));
+									$this->Form->fieldText('ip_address', $this->Html->ifSet($this->post['ip_address']), array('id' => 'ip_address', 'class' => "form-control"));
+								?>
+							</li>
+							<li>
+								<?php
+									$this->Form->label($this->_('AdminMain.index.server_os', true));
+									$this->Form->fieldSelect('server_os', array('centos' => 'RHEL/CentOS', 'debian' => 'Debian/Ubuntu', 'windows' => 'Windows', 'other' => 'Other'), array('id' => 'server_os', 'class' => "form-control"));
+								?>
+							</li>
+							<li>
+								<?php
+									$this->Form->label($this->_('AdminMain.index.auto_manage', true));
+									$this->Form->fieldSelect('auto_manage', array('1' => 'Automatic Management', '0' => 'Unamanged'), array('id' => 'auto_manage', 'class' => "form-control"));
+								?>
+							</li>
+							<li>
+								<?php
+									$this->Form->label($this->_('AdminMain.index.root_password', true).' ('.$this->_('AdminMain.index.req_only_auto_manage', true).')');
+									$this->Form->fieldText('root_password', $this->Html->ifSet($this->post['root_password']), array('id' => 'root_password', 'class' => "form-control"));
+								?>
+							</li>
+					</div>
+			</div>
+			<div class="button_row">
+				<a class="btn_right" href="#uptime_robot" onclick="$('#uptime_robot').toggle(); $('#add_server').toggle();"><?= Language::_("AdminMain.index.cancel", true); ?></a>
+				<a class="btn_right submit" href="#" onclick="$('#add_server').submit();"><?= Language::_("AdminMain.index.add_server", true); ?></a>
+			</div>
+			<?php $this->Form->end(); ?>
+		</div>
+		
+		<?php
+		$this->Widget->end();
+		?>
